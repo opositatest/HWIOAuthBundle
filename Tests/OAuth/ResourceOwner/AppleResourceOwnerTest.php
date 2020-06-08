@@ -97,6 +97,18 @@ json;
         $this->assertFalse($this->resourceOwner->revokeToken('token'));
     }
 
+    public function testGetAccessToken()
+    {
+        $this->mockHttpClient('access_token=code');
+
+        $request = new Request(['code' => 'somecode']);
+
+        $this->assertEquals(
+            ['token_id' => 'code'],
+            $this->resourceOwner->getAccessToken($request, 'http://redirect.to/')
+        );
+    }
+
     public function testGetAccessTokenErrorResponse()
     {
         $this->expectException(\Symfony\Component\Security\Core\Exception\AuthenticationException::class);

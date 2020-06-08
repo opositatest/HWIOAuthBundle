@@ -32,6 +32,7 @@ final class Configuration implements ConfigurationInterface
         'oauth2' => [
             'amazon',
             'asana',
+            'apple',
             'auth0',
             'azure',
             'bitbucket2',

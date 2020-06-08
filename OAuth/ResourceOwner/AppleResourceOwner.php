@@ -57,8 +57,9 @@ class AppleResourceOwner extends GenericOAuth2ResourceOwner
         $this->validateResponseContent($response);
 
         $user = $request->request->get('user', []);
-        if(!is_object($user))
+        if(!is_object($user)) {
             $user = json_decode($user, true);
+        }
         $data = self::jwt_decode($response['id_token']);
         $response['id'] = $data['sub'];
         $response['firstname'] = $user['name']['firstName'] ?? null;
