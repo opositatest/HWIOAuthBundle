@@ -29,8 +29,11 @@ class AppleResourceOwner extends GenericOAuth2ResourceOwner
      */
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
+        $data = self::jwt_decode($accessToken['access_token']);
+        $data['id'] = $data['sub'];
         $response = $this->getUserResponse();
-        $response->setData($accessToken);
+        $response->setPaths(['email' => 'email']);
+        $response->setData($data);
         $response->setResourceOwner($this);
         $response->setOAuthToken(new OAuthToken($accessToken));
         return $response;
@@ -51,23 +54,15 @@ class AppleResourceOwner extends GenericOAuth2ResourceOwner
             'redirect_uri' => $redirectUri,
         ), $extraParameters);
 
-        $response = $this->doGetTokenRequest($this->options['access_token_url'], $parameters);
-        $response = $this->getResponseContent($response);
 
-        $this->validateResponseContent($response);
-
-        $user = $request->request->get('user', []);
-        if(!is_object($user)) {
-            $user = json_decode($user, true);
-        }
-        $data = self::jwt_decode($response['id_token']);
-        $response['id'] = $data['sub'];
-        $response['firstname'] = $user['name']['firstName'] ?? null;
-        $response['lastname'] = $user['name']['lastName'] ?? null;
-        $response['realname'] = ($user['name']['firstName'] ?? null).' '.($user['name']['lastName'] ?? null);
-        $response['nickname'] = str_replace(' ', '.', ($user['name']['firstName'] ?? null).'.'.($user['name']['lastName'] ?? null));
-        $response['name'] = str_replace(' ', '.', ($user['name']['firstName'] ?? null).'.'.($user['name']['lastName'] ?? null));
-        $response['email'] = $user['email'] ?? null;
+        $ch = curl_init();
+        curl_setopt_array ($ch, [
+            CURLOPT_URL => 'https://appleid.apple.com/auth/token',
+            CURLOPT_POSTFIELDS => http_build_query($parameters),
+            CURLOPT_RETURNTRANSFER => true
+        ]);
+        $response = curl_exec($ch);
+        $response = json_decode($response, true);
 
         return $response;
     }
@@ -115,6 +110,9 @@ class AppleResourceOwner extends GenericOAuth2ResourceOwner
             'user_response_class' => 'HWI\Bundle\OAuthBundle\OAuth\Response\PathUserResponse',
             'scope' => 'name email',
             'appsecret_proof' => false,
+            'paths' => [
+                'email' => 'email'
+            ]
         ]);
     }
 }
