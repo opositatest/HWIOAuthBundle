@@ -137,10 +137,13 @@ class AppleResourceOwner extends GenericOAuth2ResourceOwner
     protected function verifyToken(string $token): void
     {
         $jwtToken = (new Parser())->parse((string) $token);
+        $clientId = $this->options['client_id'];
 
         if (
             $jwtToken->isExpired() ||
-            !$this->isSignatureValid($jwtToken)
+            !$this->isSignatureValid($jwtToken) ||
+            null === $jwtToken->getClaim('email') ||
+            $clientId !== $jwtToken->getClaim('aud')
         ) {
             throw new BadCredentialsException();
         }
