@@ -107,7 +107,8 @@
         "php-http/httplug":               "^2.0",
         "php-http/client-common":         "^2.0",
         "php-http/message-factory":       "^1.0",
-        "php-http/discovery":             "^1.0"
+        "php-http/discovery":             "^1.0",
+        "lcobucci/jwt": "^3.3"
     },
 
     "require-dev": {
